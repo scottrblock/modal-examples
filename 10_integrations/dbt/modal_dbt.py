@@ -38,7 +38,7 @@ dbt_env = modal.Secret.from_dict(
 
 image = (
     modal.Image.debian_slim()
-    .pip_install("dbt-sqlite")
+    .pip_install("dbt-core~=1.3.0", "dbt-sqlite~=1.3.0")
     .run_commands("apt-get install -y git")
 )
 
@@ -58,7 +58,9 @@ stub = modal.Stub(image=image, mounts=[project_mount], secrets=[dbt_env])
 )
 def dbt_cli(subcommand: typing.List):
     os.chdir(REMOTE_DBT_PROJECT)
-    subprocess.check_call(["dbt"] + subcommand)
+    cmd = ["dbt"] + subcommand
+    print(f"Running {' '.join(cmd)} against {REMOTE_DBT_PROJECT}")
+    subprocess.check_call(cmd)
 
 
 @stub.local_entrypoint()
